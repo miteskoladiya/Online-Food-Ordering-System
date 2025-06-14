@@ -1,27 +1,33 @@
-                <!DOCTYPE html>
+<!DOCTYPE html>
                 <html lang="en">
                 <?php
                 include("../connection/connect.php");
-                error_reporting(0);
+                error_reporting(1); // Change to 1 to see errors
                 session_start();
+
                 if (isset($_POST['submit'])) {
                     $username = $_POST['username'];
                     $password = $_POST['password'];
 
                     if (!empty($_POST["submit"])) {
-                        $loginquery = "SELECT * FROM admin WHERE username='$username' && password='" . password_hash($password,PASSWORD_DEFAULT) . "'";
+                        // Changed query to not hash password in SELECT
+                        $loginquery = "SELECT * FROM admin WHERE username='$username'";
                         $result = mysqli_query($db, $loginquery);
                         $row = mysqli_fetch_array($result);
 
                         if (is_array($row)) {
-                            $_SESSION["adm_id"] = $row['adm_id'];
-                            header("refresh:1;url=dashboard.php");
+                            // Verify password using MD5 (since that's what's stored in DB)
+                            if ($row['password'] === md5($password)) {
+                                $_SESSION["adm_id"] = $row['adm_id'];
+                                header("refresh:1;url=dashboard.php");
+                            } else {
+                                echo "<script>alert('Invalid Password!');</script>";
+                            }
                         } else {
-                            echo "<script>alert('Invalid Username or Password!');</script>";
+                            echo "<script>alert('Invalid Username!');</script>";
                         }
                     }
                 }
-
                 ?>
 
                 <head>
